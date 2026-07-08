@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Joker's Jackpot</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="game-shell">
+    <section class="table" id="table">
+      <div class="light-frame" aria-hidden="true"></div>
+
+      <div class="table-top">
+        <span class="pill">54 Cards</span>
+        <span class="pill">No real money</span>
+      </div>
+
+      <div class="card-stage" id="cardStage">
+        <div class="card-fx" aria-hidden="true">
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+        <div class="card-stack" id="cardStack" aria-live="polite">
+          <div class="card card-back" id="cardBack">
+            <span class="back-pattern">J</span>
+            <span class="back-title">Jackpot</span>
+          </div>
+          <div class="card card-face" id="cardFace">
+            <span class="card-rank" id="cardRank">?</span>
+            <span class="card-suit" id="cardSuit">?</span>
+            <span class="card-name" id="cardName">Choose bet</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="result-panel" id="resultPanel">
+        <p id="message">Выберите ставку и тип прогноза.</p>
+        <strong id="payoutText">Выигрыш: 0</strong>
+      </div>
+    </section>
+
+    <section class="control-panel">
+      <div class="balance-box">
+        <span>Баланс</span>
+        <strong id="balance">1000</strong>
+      </div>
+
+      <div class="bet-box">
+        <span>Ставка</span>
+        <div class="bet-controls">
+          <div class="bet-main">
+            <button class="round-btn" id="decreaseBet" type="button" aria-label="Уменьшить ставку">-</button>
+            <strong id="betAmount">10</strong>
+            <button class="round-btn" id="increaseBet" type="button" aria-label="Увеличить ставку">+</button>
+          </div>
+          <div class="bet-shortcuts">
+            <button class="shortcut-btn" id="halfBet" type="button" aria-label="Уменьшить ставку вдвое">x.5</button>
+            <button class="shortcut-btn" id="doubleBet" type="button" aria-label="Удвоить ставку">x2</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="choice-grid" aria-label="Выбор типа ставки">
+      <button class="choice black" data-bet-type="black" type="button">
+        <span class="choice-icons">♠ ♣</span>
+        <strong>Black</strong>
+        <span>x1.9</span>
+      </button>
+      <button class="choice red" data-bet-type="red" type="button">
+        <span class="choice-icons">♦ ♥</span>
+        <strong>Red</strong>
+        <span>x1.9</span>
+      </button>
+      <button class="choice ace" data-bet-type="ace" type="button">
+        <span class="choice-icons">A</span>
+        <strong>Ace</strong>
+        <span>x13</span>
+      </button>
+      <button class="choice joker" data-bet-type="joker" type="button">
+        <span class="choice-icons">★</span>
+        <strong>Joker</strong>
+        <span>x26</span>
+      </button>
+    </section>
+
+    <section class="action-row">
+      <button class="secondary-btn reset" id="resetButton" type="button">RESET BALANCE</button>
+    </section>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
