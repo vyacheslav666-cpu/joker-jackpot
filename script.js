@@ -12,11 +12,33 @@ const HOLD_START_DELAY = 360;
 const HOLD_MIN_DELAY = 55;
 const HOLD_ACCELERATION = 0.76;
 
+const deckModes = {
+  "38": {
+    label: "38 Cards",
+    ranks: ["6", "7", "8", "9", "10", "J", "Q", "K", "A"],
+    copies: 1,
+    jokers: 2
+  },
+  "54": {
+    label: "54 Cards",
+    ranks: ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"],
+    copies: 1,
+    jokers: 2
+  },
+  "108": {
+    label: "108 Cards",
+    ranks: ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"],
+    copies: 2,
+    jokers: 4
+  }
+};
+
 let balance = START_BALANCE;
 let betAmount = MIN_BET;
 let selectedBetType = null;
 let roundLocked = false;
 let isDrawing = false;
+let activeDeckMode = "54";
 let holdTimer = null;
 let holdDelay = HOLD_START_DELAY;
 let cardEffectTimer = null;
@@ -40,12 +62,13 @@ const elements = {
   increaseBet: document.querySelector("#increaseBet"),
   halfBet: document.querySelector("#halfBet"),
   doubleBet: document.querySelector("#doubleBet"),
+  deckModeButtons: document.querySelectorAll(".deck-mode"),
   depositButton: document.querySelector("#depositButton"),
   resetButton: document.querySelector("#resetButton"),
   choiceButtons: document.querySelectorAll(".choice")
 };
 
-// Создаёт колоду из 52 обычных карт и 2 джокеров.
+// Создаёт колоду для выбранного режима: 38, 54 или 108 карт.
 function createDeck() {
   const suits = [
     { name: "spades", symbol: "♠", color: "black" },
@@ -53,27 +76,36 @@ function createDeck() {
     { name: "hearts", symbol: "♥", color: "red" },
     { name: "diamonds", symbol: "♦", color: "red" }
   ];
-  const ranks = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
+  const mode = deckModes[activeDeckMode];
   const deck = [];
 
-  suits.forEach((suit) => {
-    ranks.forEach((rank) => {
-      deck.push({
-        rank,
-        suit: suit.name,
-        symbol: suit.symbol,
-        color: suit.color,
-        isAce: rank === "A",
-        isJoker: false,
-        label: `${rank}${suit.symbol}`
+  for (let copy = 0; copy < mode.copies; copy += 1) {
+    suits.forEach((suit) => {
+      mode.ranks.forEach((rank) => {
+        deck.push({
+          rank,
+          suit: suit.name,
+          symbol: suit.symbol,
+          color: suit.color,
+          isAce: rank === "A",
+          isJoker: false,
+          label: `${rank}${suit.symbol}`
+        });
       });
     });
-  });
+  }
 
-  deck.push(
-    { rank: "Joker", suit: "joker", symbol: "★", color: "joker", isAce: false, isJoker: true, label: "Joker ★" },
-    { rank: "Joker", suit: "joker", symbol: "★", color: "joker", isAce: false, isJoker: true, label: "Joker ★" }
-  );
+  for (let index = 0; index < mode.jokers; index += 1) {
+    deck.push({
+      rank: "Joker",
+      suit: "joker",
+      symbol: "★",
+      color: "joker",
+      isAce: false,
+      isJoker: true,
+      label: "Joker ★"
+    });
+  }
 
   return deck;
 }
@@ -94,6 +126,21 @@ function selectBetType(type) {
   selectedBetType = type;
   updateInterface();
   drawCard();
+}
+
+function changeDeckMode(mode) {
+  if (roundLocked || !deckModes[mode] || mode === activeDeckMode) {
+    return;
+  }
+
+  activeDeckMode = mode;
+  selectedBetType = null;
+  clearHistory();
+  resetCardView();
+  elements.resultPanel.classList.remove("win", "lose");
+  elements.message.textContent = `Колода: ${deckModes[mode].label}`;
+  elements.payoutText.textContent = "Выигрыш: 0";
+  updateInterface();
 }
 
 // Меняет размер ставки с учётом минимума и текущего баланса.
@@ -400,6 +447,12 @@ function updateInterface() {
   elements.depositButton.disabled = isDrawing;
   elements.resetButton.disabled = isDrawing;
 
+  elements.deckModeButtons.forEach((button) => {
+    const isActive = button.dataset.deckMode === activeDeckMode;
+    button.classList.toggle("active", isActive);
+    button.disabled = roundLocked;
+  });
+
   elements.choiceButtons.forEach((button) => {
     const isSelected = button.dataset.betType === selectedBetType;
     button.classList.toggle("selected", isSelected);
@@ -409,6 +462,10 @@ function updateInterface() {
 
 elements.choiceButtons.forEach((button) => {
   button.addEventListener("click", () => selectBetType(button.dataset.betType));
+});
+
+elements.deckModeButtons.forEach((button) => {
+  button.addEventListener("click", () => changeDeckMode(button.dataset.deckMode));
 });
 
 setupHoldButton(elements.decreaseBet, -MIN_BET);
