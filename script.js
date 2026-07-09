@@ -20,9 +20,11 @@ let isDrawing = false;
 let holdTimer = null;
 let holdDelay = HOLD_START_DELAY;
 let cardEffectTimer = null;
+let drawnHistory = [];
 
 const elements = {
   table: document.querySelector("#table"),
+  historyList: document.querySelector("#historyList"),
   cardStage: document.querySelector("#cardStage"),
   cardStack: document.querySelector("#cardStack"),
   cardFace: document.querySelector("#cardFace"),
@@ -221,6 +223,40 @@ function showCard(card) {
   elements.cardName.textContent = card.label;
 }
 
+function getHistoryClass(card) {
+  if (card.isJoker) {
+    return "joker-card";
+  }
+
+  return card.color === "red" ? "red-card" : "black-card";
+}
+
+function renderHistory() {
+  elements.historyList.innerHTML = drawnHistory.map((card, index) => {
+    const rank = card.isJoker ? "J" : card.rank;
+    const symbol = card.symbol;
+    const latestClass = index === 0 ? " latest" : "";
+
+    return `
+      <span class="history-card ${getHistoryClass(card)}${latestClass}">
+        <strong>${rank}</strong>
+        <em>${symbol}</em>
+      </span>
+    `;
+  }).join("");
+}
+
+function addCardToHistory(card) {
+  drawnHistory.unshift(card);
+  drawnHistory = drawnHistory.slice(0, 8);
+  renderHistory();
+}
+
+function clearHistory() {
+  drawnHistory = [];
+  renderHistory();
+}
+
 function resetCardView() {
   clearCardEffects();
   elements.cardStack.classList.remove("flipped", "shaking");
@@ -282,6 +318,7 @@ function drawCard() {
 
     balance += payout;
     showCard(card);
+    addCardToHistory(card);
     isDrawing = false;
     roundLocked = false;
     elements.cardStack.classList.remove("shaking");
@@ -321,6 +358,7 @@ function resetBalance() {
   stopBetHold();
   balance = START_BALANCE;
   betAmount = MIN_BET;
+  clearHistory();
   startNewRound();
 }
 
