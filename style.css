@@ -145,8 +145,43 @@ h1 {
 
 .table-top {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 10px;
+  z-index: 8;
+}
+
+.deck-modes {
+  position: absolute;
+  top: clamp(14px, 2.4svh, 22px);
+  left: clamp(14px, 3vw, 22px);
+  z-index: 9;
+  width: clamp(86px, 18vw, 112px);
+  display: grid;
+  gap: 5px;
+  pointer-events: auto;
+}
+
+.deck-mode {
+  min-height: clamp(24px, 4.4svh, 32px);
+  padding: 3px 8px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-radius: 999px;
+  background: rgba(73, 7, 68, 0.58);
+  color: #fff4a3;
+  font-size: clamp(0.62rem, 2vw, 0.76rem);
+  font-weight: 900;
+  text-transform: uppercase;
+  box-shadow: 0 3px 0 rgba(38, 0, 45, 0.45);
+}
+
+.deck-mode.active {
+  border-color: #6fffe0;
+  color: #ffffff;
+  background: linear-gradient(180deg, rgba(185, 22, 116, 0.92), rgba(78, 7, 82, 0.92));
+  box-shadow:
+    0 0 0 2px rgba(111, 255, 224, 0.28),
+    0 0 18px rgba(111, 255, 224, 0.72),
+    0 3px 0 rgba(38, 0, 45, 0.45);
 }
 
 .history-rail {
@@ -900,6 +935,19 @@ h1 {
     font-size: 0.68rem;
   }
 
+  .deck-modes {
+    top: 12px;
+    left: 12px;
+    width: 84px;
+    gap: 4px;
+  }
+
+  .deck-mode {
+    min-height: 22px;
+    padding: 2px 6px;
+    font-size: 0.58rem;
+  }
+
   .history-rail {
     top: 50px;
     right: 10px;
@@ -1033,6 +1081,18 @@ h1 {
     padding: 10px 10px 8px;
     grid-template-rows: auto minmax(144px, 1fr) auto;
     gap: 6px;
+  }
+
+  .deck-modes {
+    top: 10px;
+    left: 10px;
+    width: 78px;
+    gap: 3px;
+  }
+
+  .deck-mode {
+    min-height: 19px;
+    font-size: 0.52rem;
   }
 
   .history-rail {
