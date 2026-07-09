@@ -40,6 +40,7 @@ const elements = {
   increaseBet: document.querySelector("#increaseBet"),
   halfBet: document.querySelector("#halfBet"),
   doubleBet: document.querySelector("#doubleBet"),
+  depositButton: document.querySelector("#depositButton"),
   resetButton: document.querySelector("#resetButton"),
   choiceButtons: document.querySelectorAll(".choice")
 };
@@ -362,6 +363,24 @@ function resetBalance() {
   startNewRound();
 }
 
+function depositCredits() {
+  if (isDrawing) {
+    return;
+  }
+
+  stopBetHold();
+  balance += START_BALANCE;
+
+  if (betAmount < MIN_BET) {
+    betAmount = MIN_BET;
+  }
+
+  elements.resultPanel.classList.remove("win", "lose");
+  elements.message.textContent = "Додеп: +1000 кредитов";
+  elements.payoutText.textContent = `Баланс: ${balance}`;
+  updateInterface();
+}
+
 // Обновляет все видимые значения и состояния кнопок.
 function updateInterface() {
   if (balance < MIN_BET && !roundLocked) {
@@ -378,6 +397,7 @@ function updateInterface() {
   elements.increaseBet.disabled = roundLocked || betAmount >= balance || balance < MIN_BET;
   elements.halfBet.disabled = roundLocked || betAmount <= MIN_BET || balance < MIN_BET;
   elements.doubleBet.disabled = roundLocked || betAmount >= balance || balance < MIN_BET;
+  elements.depositButton.disabled = isDrawing;
   elements.resetButton.disabled = isDrawing;
 
   elements.choiceButtons.forEach((button) => {
@@ -395,6 +415,7 @@ setupHoldButton(elements.decreaseBet, -MIN_BET);
 setupHoldButton(elements.increaseBet, MIN_BET);
 elements.halfBet.addEventListener("click", halfBetAmount);
 elements.doubleBet.addEventListener("click", doubleBetAmount);
+elements.depositButton.addEventListener("click", depositCredits);
 elements.resetButton.addEventListener("click", resetBalance);
 
 updateInterface();
