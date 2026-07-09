@@ -184,6 +184,42 @@ h1 {
     0 3px 0 rgba(38, 0, 45, 0.45);
 }
 
+.draw-modes {
+  position: absolute;
+  top: clamp(14px, 2.4svh, 22px);
+  left: 50%;
+  z-index: 9;
+  width: clamp(150px, 27vw, 196px);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+  transform: translateX(-50%);
+  pointer-events: auto;
+}
+
+.draw-mode {
+  min-height: clamp(26px, 4.4svh, 34px);
+  padding: 3px 7px;
+  border: 2px solid rgba(255, 255, 255, 0.32);
+  border-radius: 999px;
+  background: rgba(73, 7, 68, 0.58);
+  color: #ffeaa7;
+  font-size: clamp(0.58rem, 1.7vw, 0.72rem);
+  font-weight: 900;
+  text-transform: uppercase;
+  box-shadow: 0 3px 0 rgba(38, 0, 45, 0.45);
+}
+
+.draw-mode.active {
+  border-color: var(--gold);
+  color: #ffffff;
+  background: linear-gradient(180deg, rgba(255, 136, 31, 0.88), rgba(132, 14, 81, 0.9));
+  box-shadow:
+    0 0 0 2px rgba(255, 212, 95, 0.3),
+    0 0 18px rgba(255, 212, 95, 0.72),
+    0 3px 0 rgba(38, 0, 45, 0.45);
+}
+
 .history-rail {
   position: absolute;
   top: clamp(58px, 9svh, 76px);
@@ -948,6 +984,18 @@ h1 {
     font-size: 0.58rem;
   }
 
+  .draw-modes {
+    top: 12px;
+    width: 140px;
+    gap: 4px;
+  }
+
+  .draw-mode {
+    min-height: 22px;
+    padding: 2px 5px;
+    font-size: 0.52rem;
+  }
+
   .history-rail {
     top: 50px;
     right: 10px;
@@ -1093,6 +1141,18 @@ h1 {
   .deck-mode {
     min-height: 19px;
     font-size: 0.52rem;
+  }
+
+  .draw-modes {
+    top: 10px;
+    width: 124px;
+    gap: 3px;
+  }
+
+  .draw-mode {
+    min-height: 19px;
+    padding: 1px 4px;
+    font-size: 0.46rem;
   }
 
   .history-rail {

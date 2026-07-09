@@ -39,10 +39,12 @@ let selectedBetType = null;
 let roundLocked = false;
 let isDrawing = false;
 let activeDeckMode = "54";
+let activeDrawMode = "return";
 let holdTimer = null;
 let holdDelay = HOLD_START_DELAY;
 let cardEffectTimer = null;
 let drawnHistory = [];
+let remainingDeck = [];
 
 const elements = {
   table: document.querySelector("#table"),
@@ -63,6 +65,7 @@ const elements = {
   halfBet: document.querySelector("#halfBet"),
   doubleBet: document.querySelector("#doubleBet"),
   deckModeButtons: document.querySelectorAll(".deck-mode"),
+  drawModeButtons: document.querySelectorAll(".draw-mode"),
   depositButton: document.querySelector("#depositButton"),
   resetButton: document.querySelector("#resetButton"),
   choiceButtons: document.querySelectorAll(".choice")
@@ -110,8 +113,31 @@ function createDeck() {
   return deck;
 }
 
-// Выбирает случайную карту из свежей колоды.
+function shuffleDeck(deck) {
+  const shuffled = [...deck];
+
+  for (let index = shuffled.length - 1; index > 0; index -= 1) {
+    const randomIndex = Math.floor(Math.random() * (index + 1));
+    [shuffled[index], shuffled[randomIndex]] = [shuffled[randomIndex], shuffled[index]];
+  }
+
+  return shuffled;
+}
+
+function resetRemainingDeck() {
+  remainingDeck = shuffleDeck(createDeck());
+}
+
+// Выбирает карту с возвратом или без возврата, в зависимости от режима.
 function drawRandomCard() {
+  if (activeDrawMode === "no-return") {
+    if (remainingDeck.length === 0) {
+      resetRemainingDeck();
+    }
+
+    return remainingDeck.pop();
+  }
+
   const deck = createDeck();
   const randomIndex = Math.floor(Math.random() * deck.length);
   return deck[randomIndex];
@@ -135,10 +161,29 @@ function changeDeckMode(mode) {
 
   activeDeckMode = mode;
   selectedBetType = null;
+  resetRemainingDeck();
   clearHistory();
   resetCardView();
   elements.resultPanel.classList.remove("win", "lose");
   elements.message.textContent = `Колода: ${deckModes[mode].label}`;
+  elements.payoutText.textContent = "Выигрыш: 0";
+  updateInterface();
+}
+
+function changeDrawMode(mode) {
+  if (roundLocked || (mode !== "return" && mode !== "no-return") || mode === activeDrawMode) {
+    return;
+  }
+
+  activeDrawMode = mode;
+  selectedBetType = null;
+  resetRemainingDeck();
+  clearHistory();
+  resetCardView();
+  elements.resultPanel.classList.remove("win", "lose");
+  elements.message.textContent = mode === "return"
+    ? "Режим: с возвратом карты"
+    : "Режим: без возврата карты";
   elements.payoutText.textContent = "Выигрыш: 0";
   updateInterface();
 }
@@ -406,6 +451,7 @@ function resetBalance() {
   stopBetHold();
   balance = START_BALANCE;
   betAmount = MIN_BET;
+  resetRemainingDeck();
   clearHistory();
   startNewRound();
 }
@@ -453,6 +499,12 @@ function updateInterface() {
     button.disabled = roundLocked;
   });
 
+  elements.drawModeButtons.forEach((button) => {
+    const isActive = button.dataset.drawMode === activeDrawMode;
+    button.classList.toggle("active", isActive);
+    button.disabled = roundLocked;
+  });
+
   elements.choiceButtons.forEach((button) => {
     const isSelected = button.dataset.betType === selectedBetType;
     button.classList.toggle("selected", isSelected);
@@ -468,6 +520,10 @@ elements.deckModeButtons.forEach((button) => {
   button.addEventListener("click", () => changeDeckMode(button.dataset.deckMode));
 });
 
+elements.drawModeButtons.forEach((button) => {
+  button.addEventListener("click", () => changeDrawMode(button.dataset.drawMode));
+});
+
 setupHoldButton(elements.decreaseBet, -MIN_BET);
 setupHoldButton(elements.increaseBet, MIN_BET);
 elements.halfBet.addEventListener("click", halfBetAmount);
@@ -475,4 +531,5 @@ elements.doubleBet.addEventListener("click", doubleBetAmount);
 elements.depositButton.addEventListener("click", depositCredits);
 elements.resetButton.addEventListener("click", resetBalance);
 
+resetRemainingDeck();
 updateInterface();
