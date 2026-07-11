@@ -1797,87 +1797,101 @@
         return audioContext;
       }
 
+      function jazzVoice(context, frequency, options = {}) {
+        const now = context.currentTime;
+        const osc = context.createOscillator();
+        const gain = context.createGain();
+        const filter = context.createBiquadFilter();
+        const attack = options.attack ?? .025;
+        const duration = options.duration ?? .42;
+        osc.type = options.type || 'triangle';
+        osc.frequency.value = frequency;
+        filter.type = 'lowpass';
+        filter.frequency.value = options.filter ?? 1100;
+        gain.gain.setValueAtTime(.0001, now);
+        gain.gain.exponentialRampToValueAtTime(options.volume ?? .006, now + attack);
+        gain.gain.exponentialRampToValueAtTime(.0001, now + duration);
+        osc.connect(filter).connect(gain).connect(context.destination);
+        osc.start(now);
+        osc.stop(now + duration + .03);
+      }
+
       function playMusicNote() {
-        if (!state.music) return;
+        if (!state.music) {
+          musicTimer = null;
+          return;
+        }
         try {
           const context = getAudioContext();
-          const phrase = [
-            220, null, 277.18, null, 329.63, null, 277.18, null,
-            196, null, 246.94, null, 293.66, null, 246.94, null,
-            174.61, null, 220, null, 261.63, null, 220, null,
-            196, null, 246.94, null, 293.66, null, 329.63, null
+          const chords = [
+            [261.63, 329.63, 392, 440],
+            [220, 277.18, 329.63, 392],
+            [293.66, 349.23, 440, 523.25],
+            [196, 246.94, 293.66, 349.23],
+            [329.63, 392, 493.88, 587.33],
+            [220, 277.18, 329.63, 392],
+            [293.66, 349.23, 440, 523.25],
+            [196, 246.94, 293.66, 349.23]
           ];
-          const roots = [55, 49, 43.65, 49];
-          const now = context.currentTime;
-          const note = phrase[musicStep % phrase.length];
+          const bassLine = [
+            65.41, 82.41, 98, 110,
+            55, 69.3, 82.41, 98,
+            73.42, 87.31, 110, 123.47,
+            49, 61.74, 73.42, 87.31
+          ];
+          const melody = [
+            null, null, 659.25, null, 587.33, null, 523.25, null,
+            null, 493.88, null, null, 440, null, 493.88, null,
+            null, null, 523.25, null, 587.33, 523.25, null, null,
+            493.88, null, 440, null, null, 392, null, null
+          ];
+          const step = musicStep % 32;
 
-          if (note) {
-            const lead = context.createOscillator();
-            const leadFilter = context.createBiquadFilter();
-            const leadGain = context.createGain();
-            lead.type = 'triangle';
-            lead.frequency.value = note;
-            leadFilter.type = 'lowpass';
-            leadFilter.frequency.value = 780;
-            leadGain.gain.setValueAtTime(.0001, now);
-            leadGain.gain.exponentialRampToValueAtTime(.008, now + .06);
-            leadGain.gain.exponentialRampToValueAtTime(.0001, now + .48);
-            lead.connect(leadFilter).connect(leadGain).connect(context.destination);
-            lead.start(now);
-            lead.stop(now + .5);
-          }
-
-          if (musicStep % 8 === 0) {
-            const root = roots[Math.floor(musicStep / 8) % roots.length];
-            const bass = context.createOscillator();
-            const bassGain = context.createGain();
-            bass.type = 'sine';
-            bass.frequency.value = root;
-            bassGain.gain.setValueAtTime(.0001, now);
-            bassGain.gain.exponentialRampToValueAtTime(.014, now + .18);
-            bassGain.gain.exponentialRampToValueAtTime(.0001, now + 2.2);
-            bass.connect(bassGain).connect(context.destination);
-            bass.start(now);
-            bass.stop(now + 2.25);
-
-            [root * 4, root * 5, root * 6].forEach((frequency, index) => {
-              const pad = context.createOscillator();
-              const padGain = context.createGain();
-              pad.type = 'sine';
-              pad.frequency.value = frequency;
-              padGain.gain.setValueAtTime(.0001, now);
-              padGain.gain.exponentialRampToValueAtTime(.0028, now + .45 + index * .06);
-              padGain.gain.exponentialRampToValueAtTime(.0001, now + 2.35);
-              pad.connect(padGain).connect(context.destination);
-              pad.start(now);
-              pad.stop(now + 2.4);
+          if (step % 4 === 0) {
+            const chord = chords[Math.floor(step / 4)];
+            chord.forEach((frequency, index) => {
+              jazzVoice(context, frequency, {
+                type: index % 2 ? 'sine' : 'triangle',
+                volume: .0028,
+                attack: .018 + index * .008,
+                duration: .62,
+                filter: 1250
+              });
             });
           }
 
-          if (musicStep % 16 === 14 && note) {
-            const bell = context.createOscillator();
-            const bellGain = context.createGain();
-            bell.type = 'sine';
-            bell.frequency.value = note * 2;
-            bellGain.gain.setValueAtTime(.0001, now);
-            bellGain.gain.exponentialRampToValueAtTime(.0035, now + .02);
-            bellGain.gain.exponentialRampToValueAtTime(.0001, now + .65);
-            bell.connect(bellGain).connect(context.destination);
-            bell.start(now);
-            bell.stop(now + .68);
+          if (step % 2 === 0) {
+            jazzVoice(context, bassLine[Math.floor(step / 2)], {
+              type: 'triangle',
+              volume: .011,
+              attack: .018,
+              duration: .5,
+              filter: 420
+            });
+          }
+
+          if (melody[step]) {
+            jazzVoice(context, melody[step], {
+              type: 'triangle',
+              volume: .0042,
+              attack: .045,
+              duration: .38,
+              filter: 1550
+            });
           }
           musicStep++;
         } catch { /* Music is optional. */ }
+        const swingDelay = musicStep % 2 ? 370 : 230;
+        musicTimer = setTimeout(playMusicNote, swingDelay);
       }
 
       function startMusic() {
         if (!state.music || musicTimer) return;
         playMusicNote();
-        musicTimer = setInterval(playMusicNote, 320);
       }
 
       function stopMusic() {
-        clearInterval(musicTimer);
+        clearTimeout(musicTimer);
         musicTimer = null;
       }
 
