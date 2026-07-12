@@ -767,7 +767,7 @@
       100% { transform: none; opacity: 1; }
     }
 
-    .cards { max-width: 980px; gap: clamp(7px, 1.3vw, 15px); margin-block: 16px 28px; }
+    .cards { width: min(100%, 980px); max-width: 980px; justify-self: center; gap: clamp(7px, 1.3vw, 15px); margin-block: 16px 28px; }
     .card-slot { border-radius: clamp(8px, 1.4vw, 14px); }
     .card-slot.active:hover { transform: translateY(-8px) rotate(.7deg); filter: brightness(1.08); }
     .card-slot.selected { transform: translateY(-12px) rotate(-1.5deg); filter: drop-shadow(0 0 13px rgba(255,54,95,.88)); }
